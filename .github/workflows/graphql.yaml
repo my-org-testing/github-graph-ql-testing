@@ -1,0 +1,38 @@
+name: graph-ql-demo
+
+on:
+  push:
+
+jobs:
+  demo-graph-ql:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: octokit/graphql-action@v2.2.1
+        id: see-graph-ql-in-action
+        with:
+          query: |
+            query repo($owner:String!,$repo:String!) {
+              repository(owner:$owner, name:$repo) {
+                issues(last:20, states:CLOSED) {
+                  edges {
+                    node {
+                      title
+                      url
+                      labels(first:5) {
+                        edges {
+                          node {
+                            name
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          owner: ${{ github.event.repository.owner.name }}
+          repo: ${{ github.event.repository.name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: "echo 'issues: ${{ steps.see-graph-ql-in-action.outputs.data }}' "
